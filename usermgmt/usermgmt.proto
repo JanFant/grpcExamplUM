@@ -6,6 +6,7 @@ option go_package = "UserManager/go-usermgmt-grpc;go_usermgmt_grpc";
 
 service UserManagement{
   rpc CreateNewUser (NewUserRequest) returns (UserResponse) {}
+  rpc GetUsers (GetUsersParamsRequest) returns (UserListResponse){}
 }
 
 message NewUserRequest{
@@ -15,8 +16,14 @@ message NewUserRequest{
 
 message UserResponse{
   string name = 1;
-  reserved 2;
-//  int32 age = 2;
+  int32 age = 2;
   int32  id = 3;
 }
 
+message GetUsersParamsRequest{
+
+}
+
+message UserListResponse{
+  repeated UserResponse users =1;
+}

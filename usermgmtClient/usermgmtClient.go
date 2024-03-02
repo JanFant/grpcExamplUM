@@ -3,6 +3,7 @@ package main
 import (
 	pb "UserManager/usermgmt"
 	"context"
+	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -28,6 +29,7 @@ func main() {
 	newUser["Alice"] = 43
 	newUser["Bob"] = 30
 
+	//Create New User
 	for name, age := range newUser {
 		r, err := c.CreateNewUser(ctx, &pb.NewUserRequest{Name: name, Age: age})
 		if err != nil {
@@ -38,4 +40,13 @@ func main() {
 	AGE: %d
 	ID: %d`, r.GetName(), r.GetAge(), r.GetId())
 	}
+
+	//Get List Users
+	params := &pb.GetUsersParamsRequest{}
+	r, err := c.GetUsers(ctx, params)
+	if err != nil {
+		log.Fatalf("could not rretrieve users: %v", err.Error())
+	}
+	log.Printf("\nUser LIST:\n")
+	fmt.Printf("r.GetUsers(): %v\n", r.Users)
 }

@@ -13,27 +13,46 @@ const (
 	port = ":50051"
 )
 
-type UserManagementServer struct {
-	pb.UnimplementedUserManagementServer
+func NewUserManagementServer() *UserManagementServer {
+	return &UserManagementServer{
+		userList: &pb.UserListResponse{},
+	}
 }
 
-func (s *UserManagementServer) CreateNewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.UserResponse, error) {
-	log.Printf("Received: %v", in.GetName())
-	var userId int32 = int32(rand.Intn(1000))
-	return &pb.UserResponse{Name: in.GetName(), Age: in.GetAge(), Id: userId}, nil
-}
-
-func main() {
+func (serv *UserManagementServer) Run() error {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err.Error())
+		return err
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterUserManagementServer(s, &UserManagementServer{})
+	pb.RegisterUserManagementServer(s, serv)
 
 	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
+	return s.Serve(lis)
+}
+
+type UserManagementServer struct {
+	pb.UnimplementedUserManagementServer
+	userList *pb.UserListResponse
+}
+
+func (usm *UserManagementServer) CreateNewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.UserResponse, error) {
+	log.Printf("Received: %v", in.GetName())
+	var userId int32 = int32(rand.Intn(1000))
+	createdUser := &pb.UserResponse{Name: in.GetName(), Age: in.GetAge(), Id: userId}
+	usm.userList.Users = append(usm.userList.Users, createdUser)
+	return createdUser, nil
+}
+
+func (usm *UserManagementServer) GetUsers(ctx context.Context, in *pb.GetUsersParamsRequest) (*pb.UserListResponse, error) {
+	log.Printf("Get Users")
+	return usm.userList, nil
+}
+
+func main() {
+	userMGMTServ := NewUserManagementServer()
+	if err := userMGMTServ.Run(); err != nil {
 		log.Fatalf("failed to serve: %v", err.Error())
 	}
 }
