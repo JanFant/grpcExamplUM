@@ -1,2 +1,3 @@
 .idea
 *.json
+usermgmtServer/db/config.toml
